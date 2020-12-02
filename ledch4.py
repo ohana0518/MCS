@@ -1,16 +1,17 @@
-#!/usr/bin/env python3
+#!/usr/bin/python
 import requests
 import socket
 import threading
 import logging
 import RPi.GPIO as GPIO
-import time
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(17,GPIO.OUT)
+GPIO.setup(4,GPIO.OUT) #led
+
 # change this to the values from MCS web console
 DEVICE_INFO = {
-    'device_id' : 'DFCCFpC6',
-    'device_key' : 'jqYFnqHQ0z3NWzrI'
+
+    'device_id' : 'DBr1jJuH',
+    'device_key' : 'tRVKz5CU7qm0e3bg'
 }
 
 # change 'INFO' to 'WARNING' to filter info messages
@@ -35,7 +36,6 @@ def establishCommandChannel():
     # Heartbeat for command server to keep the channel alive
     def sendHeartBeat(commandChannel):
         keepAliveMessage = '%(device_id)s,%(device_key)s,0' % DEVICE_INFO
-        keepAliveMessage = keepAliveMessage.encode(encoding="utf-8")
         commandChannel.sendall(keepAliveMessage)
         logging.info("beat:%s" % keepAliveMessage)
 
@@ -50,7 +50,7 @@ def establishCommandChannel():
 
 def waitAndExecuteCommand(commandChannel):
     while True:
-        command = commandChannel.recv(1024).decode(encoding="utf-8")
+        command = commandChannel.recv(1024)
         logging.info("recv:" + command)
         # command can be a response of heart beat or an update of the LED_control,
         # so we split by ',' and drop device id and device key and check length
@@ -64,10 +64,19 @@ def waitAndExecuteCommand(commandChannel):
                 logging.info("led :%d" % commandValue)
                 setLED(commandValue)
 
+pin = None
+def setupLED():
+    global pin
+    pin=GPIO.output(4,GPIO.HIGH)
 def setLED(state):
     # Note the LED is "reversed" to the pin's GPIO status.
     # So we reverse it here.
-    LED=GPIO.output(17,state)
+    if state:
+        GPIO.output(4,GPIO.HIGH)
+    else:
+        GPIO.output(4,GPIO.LOW)
+
 if __name__ == '__main__':
+    setupLED()
     channel = establishCommandChannel()
     waitAndExecuteCommand(channel)
