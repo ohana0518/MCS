@@ -35,8 +35,12 @@ try:
     while True:
         h0, t0= Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, 4)
         SwitchStatus = GPIO.input(17)
+        if( SwitchStatus == 0):
+            print('Button pressed')
+        else:
+            print('Button released')
         print('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(t0, h0))
-        payload = {"datapoints":[{"dataChnId":"Humidity","values":{"value":h0}},{"dataChnId":"ohana","values":{"value":t0}},{"dataChnId":"swich","values":{"value":SwitchStatus}}]}	
+        payload = {"datapoints":[{"dataChnId":"Humidity","values":{"value":h0}},{"dataChnId":"ohana","values":{"value":t0}},{"dataChnId":"botton","values":{"value":SwitchStatus}}]}	
         post_to_mcs(payload)
         time.sleep(1)
 except KeyboardInterrupt:
